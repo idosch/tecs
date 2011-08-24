@@ -1,0 +1,85 @@
+// This file is part of the materials accompanying the book 
+// "The Elements of Computing Systems" by Nisan and Schocken, 
+// MIT Press. Book site: www.idc.ac.il/tecs
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Central Processing unit (CPU).
+ * Consists of an ALU and a set of registers, designed to fetch and 
+ * execute instructions written in the Hack machine language.
+ * In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM=0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time unit. If reset=1 then the 
+ * CPU jumps to address 0 (i.e. sets pc=0 in next time unit) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+   
+    // Decode individual control bits from instruction 
+    And16(a=instruction, b=true, out[15]=msb, out[5]=d1bit, out[12]=abit, out[4]=d2bit, out[2]=j1bit, out[1]=j2bit, out[0]=j3bit, out[3]=d3bit);
+    // Choose which value to write to A using instruction MSB
+    Mux16(a=instruction, b=aluout, sel=msb, out=aregin);
+    // load A = !(msb) or (msb and d1bit)
+    Not(in=msb, out=notmsb);
+    And(a=msb, b=d1bit, out=msbandd1bit);
+    Or(a=notmsb, b=msbandd1bit, out=loadareg);
+    ARegister(in=aregin, load=loadareg, out=aregout, out[0..14]=addressM);
+
+    // WriteM
+    And(a=d3bit, b=msb, out=writeM);
+
+    // Chooses between A and M using the a bit
+    Mux16(a=aregout, b=inM, sel=abit, out=y);
+
+    //D Register
+    And(a=msb, b=d2bit, out=writeD);
+    DRegister(in=aluout, load=writeD, out=outdreg);
+
+    //PC
+    Not(in=zr, out=notzr);
+    Not(in=ng, out=notng);
+    And(a=notng, b=notzr, out=notngandnotzr);
+    Or(a=ng, b=zr, out=ngorzr);
+
+    Mux(a=false, b=notngandnotzr, sel=j3bit, out=out01);
+    Mux(a=zr, b=notng, sel=j3bit, out=out23);
+    Mux(a=ng, b=notzr, sel=j3bit, out=out45);
+    Mux(a=ngorzr, b=true, sel=j3bit, out=out67);
+
+    Mux(a=out01, b=out23, sel=j2bit, out=out0123);
+    Mux(a=out45, b=out67, sel=j2bit, out=out4567);
+
+    Mux(a=out0123, b=out4567, sel=j1bit, out=pcload);
+
+    And(a=msb, b=pcload, out=pcloadf);
+
+    PC(reset=reset, in=aregout, load=pcloadf, inc=true, out[0..14]=pc);
+
+    //ALU
+    ALU(x=outdreg, y=y, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6],  out=outM, out=aluout, ng=ng, zr=zr);
+}
