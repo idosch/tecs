@@ -20,13 +20,7 @@ class Parser:
         self._number_of_commands = len(self._code)
         self._counter = 0
         self._command = None
-
-        # TODO: delete at the end
-        """
-        print("File name: " + fname)
-        for line in self._code:
-            print(line)
-        """
+        self._file_name = fname
 
     def has_more_commands(self):
         """Returns 'True' if not at the end, otherwise 'False'."""
@@ -84,9 +78,8 @@ class Parser:
 
     def get_file_name(self):
         """Returns the file name of the current input file."""
-        return fname
+        return self._file_name
 
     def get_command(self):
         """Returns the current command."""
         return self._command 
-

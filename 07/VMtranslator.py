@@ -10,6 +10,7 @@ def main():
     file_name = sys.argv[1]
     parsers = []
     abs_path = os.path.abspath(file_name)
+
     if '.vm' in file_name and file_name[-3:] == '.vm':
         parser = Parser(abs_path)
         parsers.append(parser)
@@ -24,37 +25,19 @@ def main():
     
     cw = CodeWriter(output_path)
     for parser in parsers:
-        #cw.set_file_name(parser.get_file_name())
+        a_path = parser.get_file_name()
+        fname = os.path.split(a_path)[1][:-3]
+        cw.set_file_name(fname)
         while parser.has_more_commands():
             parser.advance()
             command_type = parser.command_type()
             if command_type == 'C_ARITHMETIC':
                 cw.write_arithmetic(parser.get_command())
             elif command_type == 'C_PUSH' or command_type == 'C_POP':
-                #command = parser.get_command()
                 command = command_type
                 segment = parser.arg1()
                 index = parser.arg2()
                 cw.write_push_pop(command, segment, index)
-
-    """
-    TESTING
-    TODO: delete
-    for p in parsers:
-        arg2_type = ["C_PUSH", "C_POP", "C_FUNCTION", "C_CALL"]
-        while p.has_more_commands():
-            p.advance()
-            com_type = p.command_type()
-            print('command type: ' + com_type)
-            if com_type != 'C_RETURN':
-                print('Arg1: ' + p.arg1())
-            if com_type in arg2_type:
-                print('Arg2: ' + str(p.arg2()))
-            print('-----')
-    """
-
-    #print(output_path)
-
 
 if __name__ == '__main__':
     main()
