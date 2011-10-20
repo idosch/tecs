@@ -24,17 +24,18 @@ def main():
     
     cw = CodeWriter(output_path)
     for parser in parsers:
-        cw.set_file_name(parser.get_file_name())
+        #cw.set_file_name(parser.get_file_name())
         while parser.has_more_commands():
             parser.advance()
             command_type = parser.command_type()
             if command_type == 'C_ARITHMETIC':
                 cw.write_arithmetic(parser.get_command())
             elif command_type == 'C_PUSH' or command_type == 'C_POP':
-                command = parser.get_command()
+                #command = parser.get_command()
+                command = command_type
                 segment = parser.arg1()
                 index = parser.arg2()
-                cw.write_puhs_pop(command, segment, index)
+                cw.write_push_pop(command, segment, index)
 
     """
     TESTING

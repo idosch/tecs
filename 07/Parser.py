@@ -39,7 +39,7 @@ class Parser:
 
     def command_type(self):
         """Returns the type of the current VM command."""
-        arithmetic_commands = ["add", "sub", "neq", "eq", "gt", "lt", "and",
+        arithmetic_commands = ["add", "sub", "neg", "eq", "gt", "lt", "and",
                                "or", "not"] 
         logic_commands = ["and", "or", "not"]
 
