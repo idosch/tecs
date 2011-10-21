@@ -38,6 +38,15 @@ def main():
                 segment = parser.arg1()
                 index = parser.arg2()
                 cw.write_push_pop(command, segment, index)
+            elif command_type == 'C_LABEL':
+                label = parser.arg1()
+                cw.write_label(label)
+            elif command_type == 'C_GOTO':
+                label = parser.arg1()
+                cw.write_goto(label)
+            elif command_type == 'C_IF':
+                label = parser.arg1()
+                cw.write_if(label)
 
 if __name__ == '__main__':
     main()

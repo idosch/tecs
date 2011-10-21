@@ -5,6 +5,7 @@ class CodeWriter:
         """Opens the output file and gets ready to write into it."""
         self._output_file = open(output_path, 'w')
         self._file_name = None
+        self._current_function = 'none'
 
     def __del__(self):
         """Closes the output file."""
@@ -128,3 +129,21 @@ class CodeWriter:
                 self._output_file.write('@' + self._file_name + '.' +\
                         str(index) + '\n')
                 self._output_file.write('M=D\n')
+
+    def write_label(self, label):
+        """Writes assembly code that effects the label command."""
+        self._output_file.write('(' + self._current_function + '$' + label\
+                + ')\n')
+
+    def write_goto(self, label):
+        """Writes assembly code that effects the goto command."""
+        self._output_file.write('@' + self._current_function + '$' + label\
+                + '\n')
+        self._output_file.write('0;JMP\n')
+
+    def write_if(self, label):
+        """Writes assembly code that effects the if-goto command."""
+        self._output_file.write('@SP\nA=M-1\nD=M\n@SP\nM=M-1\n')
+        self._output_file.write('@' + self._current_function + '$' + label\
+                + '\n')
+        self._output_file.write('D;JNE\n')
