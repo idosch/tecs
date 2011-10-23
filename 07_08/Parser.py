@@ -12,7 +12,7 @@ class Parser:
 
             if '//' in line:
                 pos = line.find('//')
-                line = line[:pos]
+                line = line[:pos - 1]
 
             if line != '':
                 self._code.append(line)
@@ -34,7 +34,7 @@ class Parser:
     def command_type(self):
         """Returns the type of the current VM command."""
         arithmetic_commands = ["add", "sub", "neg", "eq", "gt", "lt", "and",
-                               "or", "not"] 
+                               "or", "not"]
         logic_commands = ["and", "or", "not"]
 
 

@@ -6,6 +6,8 @@ class CodeWriter:
         self._output_file = open(output_path, 'w')
         self._file_name = None
         self._current_function = 'none'
+        self._counter = 0
+        self._a_counter = 0
 
     def __del__(self):
         """Closes the output file."""
@@ -20,8 +22,7 @@ class CodeWriter:
         self._file_name = file_name
 
     def write_arithmetic(self, command):
-        """Writes the assembly code that is the translation of the the given
-           arithmetic command."""
+        """Writes the assembly code for the corresponding math command."""
         if command == 'add':
             self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nM=D+M\nD=A+1\n')
             self._output_file.write('@SP\nM=D\n')
@@ -39,22 +40,55 @@ class CodeWriter:
         elif command == 'not':
             self._output_file.write('@SP\nA=M-1\nM=!M\n')
         elif command == 'eq':
-            self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@SP\n\
-                    M=M-1\n@EQUAL\nD;JEQ\n@NOT_EQUAL\nD;JNE\n(EQUAL)\n\
-                    @SP\nA=M-1\nM=-1\n@END_EQ\n0;JMP\n\
-                    (NOT_EQUAL)\n@SP\nA=M-1\nM=0\n@END_EQ\n0;JMP\n\
-                    (END_EQ)\n')
+            self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nD=D-M\n@SP\n')
+            self._output_file.write('M=M-1\n')
+            self._output_file.write('@EQUAL_' + str(self._a_counter) + '\n')
+            self._output_file.write('D;JEQ\n')
+            self._output_file.write('@NOT_EQUAL_' + str(self._a_counter) + '\n')
+            self._output_file.write('D;JNE\n')
+            self._output_file.write('(EQUAL_' + str(self._a_counter) + ')\n')
+            self._output_file.write('@SP\nA=M-1\nM=-1\n')
+            self._output_file.write('@END_EQ_' + str(self._a_counter) + '\n')
+            self._output_file.write('0;JMP\n')
+            self._output_file.write('(NOT_EQUAL_' + str(self._a_counter) + ')\n')
+            self._output_file.write('@SP\nA=M-1\nM=0\n')
+            self._output_file.write('@END_EQ_' + str(self._a_counter) + '\n')
+            self._output_file.write('0;JMP\n')
+            self._output_file.write('(END_EQ_' + str(self._a_counter) + ')\n')
         elif command == 'gt':
-            self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nD=M-D\n@SP\n\
-                    M=M-1\n@GREATER\nD;JGT\n@LESS_EQUAL\nD;JLE\n(GREATER)\n\
-                    @SP\nA=M-1\nM=-1\n@END_GT\n0;JMP\n\
-                    (LESS_EQUAL)\n@SP\nA=M-1\nM=0\n@END_GT\n0;JMP\n\
-                    (END_GT)\n')
+            self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nD=M-D\n@SP\n')
+            self._output_file.write('M=M-1\n')
+            self._output_file.write('@GREATER_' + str(self._a_counter) + '\n')
+            self._output_file.write('D;JGT\n')
+            self._output_file.write('@LESS_EQUAL_' + str(self._a_counter) + '\n')
+            self._output_file.write('D;JLE\n')
+            self._output_file.write('(GREATER_' + str(self._a_counter) + ')\n')
+            self._output_file.write('@SP\nA=M-1\nM=-1\n')
+            self._output_file.write('@END_GT_' + str(self._a_counter) + '\n')
+            self._output_file.write('0;JMP\n')
+            self._output_file.write('(LESS_EQUAL_' + str(self._a_counter) + ')\n')
+            self._output_file.write('@SP\nA=M-1\nM=0\n')
+            self._output_file.write('@END_GT_' + str(self._a_counter) + '\n')
+            self._output_file.write('0;JMP\n')
+            self._output_file.write('(END_GT_' + str(self._a_counter) + ')\n')
         elif command == 'lt':
-            self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nD=M-D\n@SP\n\
-                    M=M-1\n@LESS\nD;JLT\n@GE\nD;JGE\n(LESS)\n\
-                    @SP\nA=M-1\nM=-1\n@END_LT\n0;JMP\n(GE)\n@SP\n\
-                    A=M-1\nM=0\n@END_LT\n0;JMP\n(END_LT)\n')
+            self._output_file.write('@SP\nA=M-1\nD=M\nA=A-1\nD=M-D\n@SP\n')
+            self._output_file.write('M=M-1\n')
+            self._output_file.write('@LESS_' + str(self._a_counter) + '\n')
+            self._output_file.write('D;JLT\n')
+            self._output_file.write('@GE_' + str(self._a_counter) + '\n')
+            self._output_file.write('D;JGE\n')
+            self._output_file.write('(LESS_' + str(self._a_counter) + ')\n')
+            self._output_file.write('@SP\nA=M-1\nM=-1\n')
+            self._output_file.write('@END_LT_' + str(self._a_counter) + '\n')
+            self._output_file.write('0;JMP\n')
+            self._output_file.write('(GE_' + str(self._a_counter) + ')\n')
+            self._output_file.write('@SP\nA=M-1\nM=0\n')
+            self._output_file.write('@END_LT_' + str(self._a_counter) + '\n')
+            self._output_file.write('0;JMP\n')
+            self._output_file.write('(END_LT_' + str(self._a_counter) + ')\n')
+
+        self._a_counter += 1
 
     def write_push_pop(self, command, segment, index):
         """Writes the assembly code that is the translation of the given
@@ -150,7 +184,8 @@ class CodeWriter:
 
     def write_call(self, func_name, num_args):
         """Writes assembly code that effects the call command."""
-        self._output_file.write('@RET_' + func_name + '\n')
+        self._output_file.write('@RET_' + func_name + '_')
+        self._output_file.write(str(self._counter) + '\n')
         self._output_file.write('D=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
         self._output_file.write('@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
         self._output_file.write('@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
@@ -161,7 +196,9 @@ class CodeWriter:
         self._output_file.write('@SP\nD=M\n@LCL\nM=D\n')
         self._output_file.write('@' + func_name + '\n')
         self._output_file.write('0;JMP\n')
-        self._output_file.write('(RET_' + func_name + ')\n')
+        self._output_file.write('(RET_' + func_name + '_')
+        self._output_file.write(str(self._counter) + ')\n')
+        self._counter += 1
 
     def write_return(self):
         """Writes the assembly code that effects the return command."""
@@ -185,7 +222,19 @@ class CodeWriter:
         self._output_file.write('@LOOP_' + func_name + '\nD;JGT\n')
         self._output_file.write('(END_LOOP_' + func_name + ')\n')
 
+        self._current_function = func_name
+
     def write_init(self):
         """Writes the bootstrap code."""
         self._output_file.write('@256\nD=A\n@SP\nM=D\n')
-        self._output_file.write('@Sys.init\n0;JMP\n')
+        self._output_file.write('@RET_Sys.init\n')
+        self._output_file.write('D=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('D=0\n@SP\nD=M-D\n@5\nD=D-A\n@ARG\nM=D\n')
+        self._output_file.write('@SP\nD=M\n@LCL\nM=D\n')
+        self._output_file.write('@Sys.init\n')
+        self._output_file.write('0;JMP\n')
+        self._output_file.write('(RET_Sys.init)\n')
