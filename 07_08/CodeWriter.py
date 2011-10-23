@@ -147,3 +147,45 @@ class CodeWriter:
         self._output_file.write('@' + self._current_function + '$' + label\
                 + '\n')
         self._output_file.write('D;JNE\n')
+
+    def write_call(self, func_name, num_args):
+        """Writes assembly code that effects the call command."""
+        self._output_file.write('@RET_' + func_name + '\n')
+        self._output_file.write('D=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n')
+        self._output_file.write('@' + str(num_args) + '\n')
+        self._output_file.write('D=A\n@SP\nD=M-D\n@5\nD=D-A\n@ARG\nM=D\n')
+        self._output_file.write('@SP\nD=M\n@LCL\nM=D\n')
+        self._output_file.write('@' + func_name + '\n')
+        self._output_file.write('0;JMP\n')
+        self._output_file.write('(RET_' + func_name + ')\n')
+
+    def write_return(self):
+        """Writes the assembly code that effects the return command."""
+        self._output_file.write('@LCL\nD=M\n@FRAME\nM=D\n')
+        self._output_file.write('@5\nD=A\n@FRAME\nD=M-D\nA=D\nD=M\n@RET\nM=D')
+        self._output_file.write('\n@SP\nA=M-1\nD=M\n@ARG\nA=M\nM=D\n')
+        self._output_file.write('@ARG\nD=M\n@SP\nM=D+1\n')
+        self._output_file.write('@1\nD=A\n@FRAME\nA=M-D\nD=M\n@THAT\nM=D\n')
+        self._output_file.write('@2\nD=A\n@FRAME\nA=M-D\nD=M\n@THIS\nM=D\n')
+        self._output_file.write('@3\nD=A\n@FRAME\nA=M-D\nD=M\n@ARG\nM=D\n')
+        self._output_file.write('@4\nD=A\n@FRAME\nA=M-D\nD=M\n@LCL\nM=D\n')
+        self._output_file.write('@RET\nA=M\n0;JMP\n')
+
+    def write_function(self, func_name, num_locals):
+        """Writes assembly code that effects the function command."""
+        self._output_file.write('(' + func_name + ')\n')
+        self._output_file.write('@' + str(num_locals) + '\n')
+        self._output_file.write('D=A\n@END_LOOP_' + func_name + '\n')
+        self._output_file.write('D;JLE\n(LOOP_' + func_name + ')\n')
+        self._output_file.write('@SP\nA=M\nM=0\n@SP\nM=M+1\nD=D-1\n')
+        self._output_file.write('@LOOP_' + func_name + '\nD;JGT\n')
+        self._output_file.write('(END_LOOP_' + func_name + ')\n')
+
+    def write_init(self):
+        """Writes the bootstrap code."""
+        self._output_file.write('@256\nD=A\n@SP\nM=D\n')
+        self._output_file.write('@Sys.init\n0;JMP\n')
